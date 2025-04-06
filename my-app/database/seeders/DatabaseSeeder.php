@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             // ProjectCategoriesTableSeeder::class,
             // ProjectsTableSeeder::class,
             // UsersTableSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }
