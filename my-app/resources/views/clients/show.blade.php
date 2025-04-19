@@ -66,49 +66,39 @@
             </div>
 
             <!-- プロジェクト一覧    -->
-            <div class="mt-8">
-                <h3 class="text-lg font-semibold mb-2">プロジェクト一覧</h3>
-                <table class="min-w-full">
-                    <thead>
-                        <tr>
-                            <th class="text-left py-2 px-4 bg-gray-50">プロジェクト名</th>
-                            <th class="text-left py-2 px-4 bg-gray-50">開始日</th>
-                            <th class="text-left py-2 px-4 bg-gray-50">終了日</th>
-                            <th class="text-left py-2 px-4 bg-gray-50">ステータス</th>
-                            <th class="text-left py-2 px-4 bg-gray-50">備考</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($client->projects as $project)
-                        <tr>
-                            <td class="py-2 px-4">
-                                <a href="{{ route('projects.show', $project) }}" class="text-blue-600 hover:text-blue-900">
-                                    {{ $project->name }}
-                                </a>
-                            </td>
-                            <td class="py-2 px-4">{{ $project->start_date }}</td>
-                            <td class="py-2 px-4">{{ $project->end_date }}</td>
-                            <td class="py-2 px-4">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    @if($project->status == '進行中') bg-green-100 text-green-800 
-                                    @elseif($project->status == '完了') bg-blue-100 text-blue-800 
-                                    @elseif($project->status == '中断') bg-yellow-100 text-yellow-800 
-                                    @else bg-gray-100 text-gray-800 @endif">
-                                    {{ $project->status }}
-                                </span>
-                            </td>
-                            <td class="py-2 px-4">{{ Str::limit($project->notes, 30) }}</td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="py-4 px-4 text-center text-gray-500">
-                                このクライアントに関連するプロジェクトはありません
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+            @if($client->projects->count() > 0)
+                <div class="mt-8">
+                    <h3 class="text-lg font-semibold mb-2">プロジェクト一覧</h3>
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th class="text-left py-2 px-4 bg-gray-50">プロジェクト名</th>
+                                <th class="text-left py-2 px-4 bg-gray-50">開始日</th>
+                                <th class="text-left py-2 px-4 bg-gray-50">カテゴリー</th>
+                                <th class="text-left py-2 px-4 bg-gray-50">備考</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($client->projects as $project)
+                                <tr>
+                                    <td class="py-2 px-4">
+                                        <a href="{{ route('projects.show', $project) }}" class="text-blue-600 hover:text-blue-900">
+                                            {{ $project->name }}
+                                        </a>
+                                    </td>
+                                    <td class="py-2 px-4">{{ $project->start_date }}</td>
+                                    <td class="py-2 px-4">{{ optional($project->category)->name }}</td>
+                                    <td class="py-2 px-4">{{ $project->memo }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="mt-8">
+                    <p class="text-gray-500">関連するプロジェクトはありません。</p>
+                </div>
+            @endif
 
         </div>
     </div>

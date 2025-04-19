@@ -11,7 +11,14 @@ class Project extends Model
     use HasFactory;
 
     // フィールドを指定する
-    protected $fillable = ['name', 'category_id', 'start_date', 'content', 'memo'];
+    protected $fillable = [
+        'name',
+        'client_id',
+        'category_id',
+        'start_date',
+        'content',
+        'memo'
+    ];
 
     // カテゴリーを取得する
     public function category()
@@ -23,5 +30,13 @@ class Project extends Model
     public function files()
     {
         return $this->hasMany(ProjectFile::class);
+    }
+
+    /**
+     * プロジェクトに関連するクライアントを取得
+     */
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 }

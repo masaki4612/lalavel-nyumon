@@ -19,6 +19,9 @@ class Client extends Model
         'notes',
     ];
 
+    /**
+     * クライアントに関連するプロジェクトを取得
+     */
     public function projects()
     {
         return $this->hasMany(Project::class);
