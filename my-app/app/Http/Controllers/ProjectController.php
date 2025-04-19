@@ -42,10 +42,21 @@ class ProjectController extends Controller
     }
 
     // プロジェクトを作成する
-    public function create()
+    public function create(Request $request)
     {
         $categories = ProjectCategory::all();
-        return view('projects.create', compact('categories'));
+        $selectedClient = null;
+        $clients = collect();  // 空のコレクションを初期化
+
+        // client_idが指定されている場合
+        if ($request->has('client_id')) {
+            $selectedClient = Client::findOrFail($request->client_id);
+        } else {
+            // client_idが指定されていない場合は全クライアントを取得
+            $clients = Client::all();
+        }
+
+        return view('projects.create', compact('categories', 'clients', 'selectedClient'));
     }
 
     // プロジェクトを保存する
@@ -54,7 +65,8 @@ class ProjectController extends Controller
         // バリデーション   
         $request->validate([
             'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:project_categories,id',//
+            'client_id' => 'required|exists:clients,id',
+            'category_id' => 'required|exists:project_categories,id',
             'start_date' => 'required|date',
             'content' => 'required|string',
             'memo' => 'nullable|string',
@@ -62,7 +74,14 @@ class ProjectController extends Controller
         ]);
 
         // プロジェクトを保存する
-        $project = Project::create($request->only(['name', 'category_id', 'start_date', 'content', 'memo']));
+        $project = Project::create($request->only([
+            'name',
+            'client_id',
+            'category_id',
+            'start_date',
+            'content',
+            'memo'
+        ]));
 
         // ファイルを保存する
         if ($request->hasFile('files')) {
@@ -76,7 +95,9 @@ class ProjectController extends Controller
                 ]);
             }
         }
-        return redirect()->route('projects.index');
+
+        return redirect()->route('projects.index')
+                        ->with('success', 'プロジェクトを作成しました');
     }
     
 }

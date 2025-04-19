@@ -79,9 +79,16 @@
                     </div>
 
                     <!-- プロジェクト一覧 -->
-                    @if($client->projects->count() > 0)
-                        <div class="mt-8">
-                            <h3 class="text-lg font-semibold mb-4">プロジェクト一覧</h3>
+                    <div class="mt-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">プロジェクト一覧</h3>
+                            <a href="{{ route('projects.create', ['client_id' => $client->id]) }}" 
+                               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                プロジェクトを追加
+                            </a>
+                        </div>
+
+                        @if($client->projects->count() > 0)
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead>
                                     <tr>
@@ -120,12 +127,12 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-                    @else
-                        <div class="mt-8 bg-gray-50 p-4 rounded">
-                            <p class="text-gray-500">関連するプロジェクトはありません。</p>
-                        </div>
-                    @endif
+                        @else
+                            <div class="bg-gray-50 p-4 rounded">
+                                <p class="text-gray-500">関連するプロジェクトはありません。</p>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
