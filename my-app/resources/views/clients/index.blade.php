@@ -22,10 +22,16 @@
                                     クライアント名
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    メールアドレス
+                                    URL
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     電話番号
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    住所
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    備考
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     操作
@@ -41,10 +47,16 @@
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $client->email }}
+                                    {{ $client->url }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ $client->phone }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ $client->address }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ $client->notes }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <a href="{{ route('clients.edit', $client) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">編集</a>

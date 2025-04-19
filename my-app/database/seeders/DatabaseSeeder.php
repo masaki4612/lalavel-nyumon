@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ProjectCategoriesTableSeeder::class,
             ProjectsTableSeeder::class,
+            ClientsTableSeeder::class,
             UsersTableSeeder::class,
             AdminUserSeeder::class,
         ]);
