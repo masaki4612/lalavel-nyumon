@@ -5,15 +5,38 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\ProjectCategory;
 use App\Models\ProjectFile;
+use App\Models\Client;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
     // プロジェクト一覧を表示する（カテゴリーとファイルも取得）
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::with('category', 'files')->get();
-        return view('projects.index', compact('projects'));
+        $query = Project::with(['category', 'client']);
+        
+        // クライアントによる絞り込み
+        if ($request->has('client_id') && $request->client_id) {
+            $query->where('client_id', $request->client_id);
+        }
+
+        // クライアント名での検索
+        if ($request->has('search') && $request->search) {
+            $query->whereHas('client', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $projects = $query->latest()->paginate(10);
+        $clients = Client::orderBy('name')->get();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'clients' => $clients
+            ]);
+        }
+
+        return view('projects.index', compact('projects', 'clients'));
     }
 
     // プロジェクトを作成する
