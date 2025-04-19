@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('クライアント一覧') }}
+            {{ __('クライアント') }}
         </h2>
     </x-slot>
 
@@ -9,7 +9,101 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <div class="mb-4">
+                    <!-- 検索フォーム -->
+                    <div class="mb-6" x-data="{
+                        search: '',
+                        clients: {{ $allClients->toJson() }},
+                        selectedClient: null,
+                        filteredClients: [],
+                        showResults: false,
+                        selectedIndex: -1,
+                        selectClient(client) {
+                            this.selectedClient = client;
+                            this.search = client.name;
+                            this.showResults = false;
+                            this.selectedIndex = -1;
+                            this.$refs.form.submit();
+                        },
+                        filterClients() {
+                            if (!this.search) {
+                                this.filteredClients = [];
+                                this.selectedIndex = -1;
+                                return;
+                            }
+                            this.filteredClients = this.clients.filter(client => 
+                                client.name.toLowerCase().includes(this.search.toLowerCase())
+                            ).slice(0, 5);
+                            this.showResults = true;
+                        },
+                        onKeyDown(event) {
+                            if (!this.showResults || this.filteredClients.length === 0) return;
+
+                            if (event.key === 'ArrowDown') {
+                                event.preventDefault();
+                                this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredClients.length - 1);
+                            }
+                            else if (event.key === 'ArrowUp') {
+                                event.preventDefault();
+                                this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
+                            }
+                            else if (event.key === 'Enter' && this.selectedIndex >= 0) {
+                                event.preventDefault();
+                                this.selectClient(this.filteredClients[this.selectedIndex]);
+                            }
+                            else if (event.key === 'Escape') {
+                                this.showResults = false;
+                                this.selectedIndex = -1;
+                            }
+                        }
+                    }">
+                        <form x-ref="form" method="GET" action="{{ route('clients.index') }}" class="relative">
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-1 max-w-xs relative">
+                                    <input
+                                        type="text"
+                                        name="search"
+                                        x-model="search"
+                                        @keyup="filterClients"
+                                        @keydown="onKeyDown"
+                                        @click.outside="showResults = false"
+                                        placeholder="クライアント名で検索..."
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    >
+                                    <input type="hidden" name="client_id" :value="selectedClient ? selectedClient.id : ''">
+                                    
+                                    <!-- サジェスト結果 -->
+                                    <div
+                                        x-show="showResults && filteredClients.length > 0"
+                                        class="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200"
+                                    >
+                                        <ul class="max-h-60 overflow-auto">
+                                            <template x-for="(client, index) in filteredClients" :key="client.id">
+                                                <li
+                                                    @click="selectClient(client)"
+                                                    @mouseover="selectedIndex = index"
+                                                    :class="{
+                                                        'px-4 py-2 cursor-pointer text-sm': true,
+                                                        'bg-indigo-100': selectedIndex === index,
+                                                        'hover:bg-gray-100': selectedIndex !== index
+                                                    }"
+                                                    x-text="client.name"
+                                                >
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                @if(request('search'))
+                                    <a href="{{ route('clients.index') }}" class="text-gray-600 hover:text-gray-900">
+                                        検索をクリア
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="flex justify-between items-center mb-4">
                         <a href="{{ route('clients.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             新規クライアント登録
                         </a>

@@ -16,21 +16,44 @@
                         selectedClient: null,
                         filteredClients: [],
                         showResults: false,
+                        selectedIndex: -1,
                         selectClient(client) {
                             this.selectedClient = client;
                             this.search = client.name;
                             this.showResults = false;
+                            this.selectedIndex = -1;
                             this.$refs.form.submit();
                         },
                         filterClients() {
                             if (!this.search) {
                                 this.filteredClients = [];
+                                this.selectedIndex = -1;
                                 return;
                             }
                             this.filteredClients = this.clients.filter(client => 
                                 client.name.toLowerCase().includes(this.search.toLowerCase())
                             ).slice(0, 5);
                             this.showResults = true;
+                        },
+                        onKeyDown(event) {
+                            if (!this.showResults || this.filteredClients.length === 0) return;
+
+                            if (event.key === 'ArrowDown') {
+                                event.preventDefault();
+                                this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredClients.length - 1);
+                            }
+                            else if (event.key === 'ArrowUp') {
+                                event.preventDefault();
+                                this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
+                            }
+                            else if (event.key === 'Enter' && this.selectedIndex >= 0) {
+                                event.preventDefault();
+                                this.selectClient(this.filteredClients[this.selectedIndex]);
+                            }
+                            else if (event.key === 'Escape') {
+                                this.showResults = false;
+                                this.selectedIndex = -1;
+                            }
                         }
                     }">
                         <form x-ref="form" method="GET" action="{{ route('projects.index') }}" class="relative">
@@ -41,6 +64,7 @@
                                         name="search"
                                         x-model="search"
                                         @keyup="filterClients"
+                                        @keydown="onKeyDown"
                                         @click.outside="showResults = false"
                                         placeholder="クライアント名で検索..."
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -53,10 +77,15 @@
                                         class="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200"
                                     >
                                         <ul class="max-h-60 overflow-auto">
-                                            <template x-for="client in filteredClients" :key="client.id">
+                                            <template x-for="(client, index) in filteredClients" :key="client.id">
                                                 <li
                                                     @click="selectClient(client)"
-                                                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                                    @mouseover="selectedIndex = index"
+                                                    :class="{
+                                                        'px-4 py-2 cursor-pointer text-sm': true,
+                                                        'bg-indigo-100': selectedIndex === index,
+                                                        'hover:bg-gray-100': selectedIndex !== index
+                                                    }"
                                                     x-text="client.name"
                                                 >
                                                 </li>

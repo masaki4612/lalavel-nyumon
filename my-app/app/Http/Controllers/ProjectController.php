@@ -28,7 +28,9 @@ class ProjectController extends Controller
         }
 
         $projects = $query->latest()->paginate(10);
-        $clients = Client::orderBy('name')->get();
+        
+        // 検索用に全クライアントデータを取得（必要な項目のみ）
+        $clients = Client::select('id', 'name')->get();
 
         if ($request->ajax()) {
             return response()->json([

@@ -10,11 +10,22 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // クライアント一覧を取得
-        $clients = Client::latest()->paginate(10);
-        return view('clients.index', compact('clients'));
+        $query = Client::query();
+
+        // 検索クエリがある場合
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        $clients = $query->latest()->paginate(10);
+        
+        // 検索用に全クライアントデータも取得
+        $allClients = Client::select('id', 'name')->get();
+        
+        return view('clients.index', compact('clients', 'allClients'));
     }
 
     /**
@@ -35,9 +46,9 @@ class ClientController extends Controller
         // バリデーション
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'url' => 'nullable|url',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string', 
+            'url' => 'nullable|url|max:255',
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255', 
             'notes' => 'nullable|string',
         ]);
 
@@ -75,15 +86,17 @@ class ClientController extends Controller
         // バリデーション
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'url' => 'nullable|url',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
+            'url' => 'nullable|url|max:255',
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
 
-        // クライアントを更新
         $client->update($validatedData);
-        return redirect()->route('clients.index')->with('success', 'クライアントを更新しました');
+
+        // 更新後はクライアントの詳細ページにリダイレクト
+        return redirect()->route('clients.show', $client)
+                        ->with('success', 'クライアント情報を更新しました。');
     }
 
     /**
