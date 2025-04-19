@@ -48,7 +48,7 @@ class ClientController extends Controller
             'name' => 'required|string|max:255',
             'url' => 'nullable|url|max:255',
             'phone' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255', 
+            'address' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
 
