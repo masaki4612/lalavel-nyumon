@@ -20,11 +20,12 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
+            ClientsTableSeeder::class,
             ProjectCategoriesTableSeeder::class,
             ProjectsTableSeeder::class,
-            ClientsTableSeeder::class,
             UsersTableSeeder::class,
             AdminUserSeeder::class,
+            ProjectUserTableSeeder::class,
         ]);
     }
 }
