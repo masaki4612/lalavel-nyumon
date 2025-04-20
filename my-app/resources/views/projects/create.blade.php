@@ -81,14 +81,27 @@
 
                         <div class="mb-4">
                             <label for="memo" class="block text-sm font-medium text-gray-700">メモ</label>
-                            <textarea name="memo" id="memo" rows="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">{{ old('memo') }}</textarea>
-                            @error('memo')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <textarea name="memo" id="memo" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">{{ old('memo') }}</textarea>
                         </div>
 
-                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">担当者</label>
+                            <div class="mt-2 space-y-2">
+                                @foreach($users as $user)
+                                    <div class="flex items-center">
+                                        <input type="checkbox" name="users[]" id="user_{{ $user->id }}" value="{{ $user->id }}" 
+                                            {{ in_array($user->id, old('users', [])) ? 'checked' : '' }}
+                                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                        <label for="user_{{ $user->id }}" class="ml-2 block text-sm text-gray-900">
+                                            {{ $user->name }}
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @error('users')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <div class="flex justify-end space-x-4">
                             <a href="{{ route('projects.index') }}" 

@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\ProjectCategory;
 use App\Models\ProjectFile;
 use App\Models\Client;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -47,17 +48,16 @@ class ProjectController extends Controller
     {
         $categories = ProjectCategory::all();
         $selectedClient = null;
-        $clients = collect();  // 空のコレクションを初期化
+        $clients = collect();
+        $users = User::orderBy('name')->get();
 
-        // client_idが指定されている場合
         if ($request->has('client_id')) {
             $selectedClient = Client::findOrFail($request->client_id);
         } else {
-            // client_idが指定されていない場合は全クライアントを取得
             $clients = Client::all();
         }
 
-        return view('projects.create', compact('categories', 'clients', 'selectedClient'));
+        return view('projects.create', compact('categories', 'clients', 'selectedClient', 'users'));
     }
 
     // プロジェクトを保存する
@@ -71,6 +71,8 @@ class ProjectController extends Controller
             'start_date' => 'required|date',
             'content' => 'required|string',
             'memo' => 'nullable|string',
+            'users' => 'nullable|array',
+            'users.*' => 'exists:users,id'
         ]);
 
         // プロジェクトを保存する
@@ -83,7 +85,10 @@ class ProjectController extends Controller
             'memo'
         ]));
 
-        
+        // ユーザーを紐付ける
+        if ($request->has('users')) {
+            $project->users()->attach($request->users);
+        }
 
         return redirect()->route('projects.index')
                         ->with('success', 'プロジェクトを作成しました');
@@ -103,7 +108,8 @@ class ProjectController extends Controller
     {
         $categories = ProjectCategory::all();
         $clients = Client::all();
-        return view('projects.edit', compact('project', 'categories', 'clients'));
+        $users = User::orderBy('name')->get();
+        return view('projects.edit', compact('project', 'categories', 'clients', 'users'));
     }
 
     // プロジェクトを更新する
@@ -117,6 +123,8 @@ class ProjectController extends Controller
             'start_date' => 'required|date',
             'content' => 'required|string',
             'memo' => 'nullable|string',
+            'users' => 'nullable|array',
+            'users.*' => 'exists:users,id'
         ]);
 
         // プロジェクトを更新
@@ -128,7 +136,13 @@ class ProjectController extends Controller
             'content',
             'memo'
         ]));
-        
+
+        // ユーザーを紐付ける
+        if ($request->has('users')) {
+            $project->users()->sync($request->users);
+        } else {
+            $project->users()->detach();
+        }
 
         return redirect()->route('projects.show', $project)
                         ->with('success', 'プロジェクトを更新しました');

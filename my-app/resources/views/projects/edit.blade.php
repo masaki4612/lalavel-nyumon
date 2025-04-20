@@ -81,10 +81,28 @@
                             @enderror
                         </div>
 
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">担当者</label>
+                            <div class="mt-2 space-y-2">
+                                @foreach($users as $user)
+                                    <div class="flex items-center">
+                                        <input type="checkbox" name="users[]" id="user_{{ $user->id }}" value="{{ $user->id }}" 
+                                            {{ in_array($user->id, old('users', $project->users->pluck('id')->toArray())) ? 'checked' : '' }}
+                                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                        <label for="user_{{ $user->id }}" class="ml-2 block text-sm text-gray-900">
+                                            {{ $user->name }}
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @error('users')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    
                         
 
                         
-
                         <div class="flex justify-end space-x-4">
                             <a href="{{ route('projects.show', $project) }}" 
                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">

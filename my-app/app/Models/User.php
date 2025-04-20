@@ -43,4 +43,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * ユーザーに関連するプロジェクトを取得
+     */
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class)->withTimestamps();
+    }
 }
