@@ -7,6 +7,7 @@ use App\Models\ProjectCategory;
 use App\Models\ProjectFile;
 use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
@@ -70,7 +71,6 @@ class ProjectController extends Controller
             'start_date' => 'required|date',
             'content' => 'required|string',
             'memo' => 'nullable|string',
-            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,ppt,pptx',
         ]);
 
         // プロジェクトを保存する
@@ -83,21 +83,69 @@ class ProjectController extends Controller
             'memo'
         ]));
 
-        // ファイルを保存する
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('projects', 'public');
-                ProjectFile::create([
-                    'project_id' => $project->id,
-                    'file_path' => $path,
-                    'file_type' => $file->getClientOriginalExtension(),
-                    'original_name' => $file->getClientOriginalName(),
-                ]);
-            }
-        }
+        
 
         return redirect()->route('projects.index')
                         ->with('success', 'プロジェクトを作成しました');
     }
-    
+
+    // プロジェクトを表示する
+    public function show(Project $project)
+    {
+        // プロジェクトに関連するカテゴリー、クライアント、ファイル情報を取得
+        $project->load(['category', 'client', 'files']);
+        
+        return view('projects.show', compact('project'));
+    }
+
+    // プロジェクトを編集する
+    public function edit(Project $project)
+    {
+        $categories = ProjectCategory::all();
+        $clients = Client::all();
+        return view('projects.edit', compact('project', 'categories', 'clients'));
+    }
+
+    // プロジェクトを更新する
+    public function update(Request $request, Project $project)
+    {
+        // バリデーション
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'client_id' => 'required|exists:clients,id',
+            'category_id' => 'required|exists:project_categories,id',
+            'start_date' => 'required|date',
+            'content' => 'required|string',
+            'memo' => 'nullable|string',
+        ]);
+
+        // プロジェクトを更新
+        $project->update($request->only([
+            'name',
+            'client_id',
+            'category_id',
+            'start_date',
+            'content',
+            'memo'
+        ]));
+        
+
+        return redirect()->route('projects.show', $project)
+                        ->with('success', 'プロジェクトを更新しました');
+    }
+
+    public function destroy(Project $project)
+    {
+        // 関連するファイルを物理的に削除
+        foreach ($project->files as $file) {
+            // ストレージから物理的にファイルを削除
+            Storage::disk('public')->delete($file->file_path);
+        }
+
+        // プロジェクトを削除（関連するファイルレコードは外部キー制約により自動的に削除される）
+        $project->delete();
+
+        return redirect()->route('projects.index')
+                        ->with('success', 'プロジェクトを削除しました');
+    }
 }

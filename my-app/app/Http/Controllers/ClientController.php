@@ -105,8 +105,15 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
-        // クライアントを削除
+        // クライアントに関連するプロジェクトがあるかチェック
+        if ($client->projects()->exists()) {
+            return redirect()->route('clients.show', $client)
+                            ->with('error', 'このクライアントには関連するプロジェクトが存在するため削除できません。先にプロジェクトを削除してください。');
+        }
+
         $client->delete();
-        return redirect()->route('clients.index')->with('success', 'クライアントを削除しました');
+
+        return redirect()->route('clients.index')
+                        ->with('success', 'クライアントを削除しました');
     }
 }
