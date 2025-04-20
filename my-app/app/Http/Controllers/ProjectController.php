@@ -15,32 +15,36 @@ class ProjectController extends Controller
     // プロジェクト一覧を表示する（カテゴリーとファイルも取得）
     public function index(Request $request)
     {
-        $query = Project::with(['category', 'client']);
+        $query = Project::with(['category', 'client', 'users']);
         
-        // クライアントによる絞り込み
-        if ($request->has('client_id') && $request->client_id) {
-            $query->where('client_id', $request->client_id);
+        // クライアント名での検索
+        if ($request->filled('client')) {
+            $query->whereHas('client', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->client . '%');
+            });
         }
 
-        // クライアント名での検索
-        if ($request->has('search') && $request->search) {
-            $query->whereHas('client', function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%');
+        // プロジェクト名での検索
+        if ($request->filled('project')) {
+            $query->where('name', 'like', '%' . $request->project . '%');
+        }
+
+        // 担当者での検索
+        if ($request->filled('user')) {
+            $query->whereHas('users', function($q) use ($request) {
+                $q->where('users.id', $request->user);
             });
         }
 
         $projects = $query->latest()->paginate(10);
         
-        // 検索用に全クライアントデータを取得（必要な項目のみ）
+        // 検索用に全クライアントデータを取得
         $clients = Client::select('id', 'name')->get();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'clients' => $clients
-            ]);
-        }
+        // 担当者を取得
+        $users = User::orderBy('name')->get();
 
-        return view('projects.index', compact('projects', 'clients'));
+        return view('projects.index', compact('projects', 'clients', 'users'));
     }
 
     // プロジェクトを作成する
@@ -98,7 +102,7 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         // プロジェクトに関連するカテゴリー、クライアント、ファイル情報を取得
-        $project->load(['category', 'client', 'files']);
+        $project->load(['category', 'client', 'files', 'users']);
         
         return view('projects.show', compact('project'));
     }

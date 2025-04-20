@@ -9,99 +9,46 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <!-- 検索フォーム -->
-                    <div class="mb-6" x-data="{
-                        search: '',
-                        clients: {{ $clients->toJson() }},
-                        selectedClient: null,
-                        filteredClients: [],
-                        showResults: false,
-                        selectedIndex: -1,
-                        selectClient(client) {
-                            this.selectedClient = client;
-                            this.search = client.name;
-                            this.showResults = false;
-                            this.selectedIndex = -1;
-                            this.$refs.form.submit();
-                        },
-                        filterClients() {
-                            if (!this.search) {
-                                this.filteredClients = [];
-                                this.selectedIndex = -1;
-                                return;
-                            }
-                            this.filteredClients = this.clients.filter(client => 
-                                client.name.toLowerCase().includes(this.search.toLowerCase())
-                            ).slice(0, 5);
-                            this.showResults = true;
-                        },
-                        onKeyDown(event) {
-                            if (!this.showResults || this.filteredClients.length === 0) return;
-
-                            if (event.key === 'ArrowDown') {
-                                event.preventDefault();
-                                this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredClients.length - 1);
-                            }
-                            else if (event.key === 'ArrowUp') {
-                                event.preventDefault();
-                                this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
-                            }
-                            else if (event.key === 'Enter' && this.selectedIndex >= 0) {
-                                event.preventDefault();
-                                this.selectClient(this.filteredClients[this.selectedIndex]);
-                            }
-                            else if (event.key === 'Escape') {
-                                this.showResults = false;
-                                this.selectedIndex = -1;
-                            }
-                        }
-                    }">
-                        <form x-ref="form" method="GET" action="{{ route('projects.index') }}" class="relative">
-                            <div class="flex items-center space-x-4">
-                                <div class="flex-1 max-w-xs relative">
-                                    <input
-                                        type="text"
-                                        name="search"
-                                        x-model="search"
-                                        @keyup="filterClients"
-                                        @keydown="onKeyDown"
-                                        @click.outside="showResults = false"
-                                        placeholder="クライアント名で検索..."
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    >
-                                    <input type="hidden" name="client_id" :value="selectedClient ? selectedClient.id : ''">
-                                    
-                                    <!-- サジェスト結果 -->
-                                    <div
-                                        x-show="showResults && filteredClients.length > 0"
-                                        class="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200"
-                                    >
-                                        <ul class="max-h-60 overflow-auto">
-                                            <template x-for="(client, index) in filteredClients" :key="client.id">
-                                                <li
-                                                    @click="selectClient(client)"
-                                                    @mouseover="selectedIndex = index"
-                                                    :class="{
-                                                        'px-4 py-2 cursor-pointer text-sm': true,
-                                                        'bg-indigo-100': selectedIndex === index,
-                                                        'hover:bg-gray-100': selectedIndex !== index
-                                                    }"
-                                                    x-text="client.name"
-                                                >
-                                                </li>
-                                            </template>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                @if(request('client_id'))
-                                    <a href="{{ route('projects.index') }}" class="text-gray-600 hover:text-gray-900">
-                                        検索をクリア
-                                    </a>
-                                @endif
+                    
+                    <div class="flex justify-between mb-6">
+                        <!-- 検索フォーム -->
+                        <form action="{{ route('projects.index') }}" method="GET" class="flex space-x-4" id="searchForm">
+                            <div>
+                                
+                                <input type="text" name="client" id="client" value="{{ request('client') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="クライアント名" {{ request('client') ? 'autofocus' : '' }}>
+                            </div>
+                            <div>
+                                
+                                <input type="text" name="project" id="project" value="{{ request('project') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="プロジェクト名" {{ request('project') ? 'autofocus' : '' }}>
+                            </div>
+                            <div>
+                                
+                                <select name="user" id="user" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="担当者" {{ request('user') ? 'autofocus' : '' }}>
+                                    <option value="">担当者</option>
+                                    @foreach($users ?? [] as $user)
+                                    <option value="{{ $user->id }}" {{ request('user') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    検索
+                                </button>
+                            </div>
+                            <div class="flex items-end ml-2">
+                                <a href="{{ route('projects.index') }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    検索結果をクリア
+                                </a>
                             </div>
                         </form>
+                        <!-- 新規プロジェクト作成ボタン -->
+                        <div class="flex items-end ml-2">
+                            <a href="{{ route('projects.create') }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                新規プロジェクト作成
+                            </a>
+                        </div>
                     </div>
+
 
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead>
@@ -122,7 +69,7 @@
                                     内容
                                 </th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    メモ
+                                    担当者
                                 </th>
                             </tr>
                         </thead>
@@ -131,11 +78,11 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @if($project->client)
-                                        <a href="{{ route('clients.show', $project->client) }}" class="text-blue-600 hover:text-blue-900">
-                                            {{ $project->client->name }}
-                                        </a>
+                                    <a href="{{ route('clients.show', $project->client) }}" class="text-blue-600 hover:text-blue-900">
+                                        {{ $project->client->name }}
+                                    </a>
                                     @else
-                                        <span class="text-gray-400">未設定</span>
+                                    <span class="text-gray-400">未設定</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -153,11 +100,13 @@
                                     {{ $project->content }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $project->memo }}
+                                    @foreach($project->users as $user)
+                                    {{ $user->name }}<br>
+                                    @endforeach
                                 </td>
                             </tr>
                             @endforeach
-                        </tbody>    
+                        </tbody>
                     </table>
 
                     <div class="mt-4">
@@ -167,4 +116,4 @@
             </div>
         </div>
     </div>
-</x-app-layout> 
+</x-app-layout>

@@ -71,6 +71,16 @@
                                     {!! nl2br(e($project->memo)) !!}
                                 </td>
                             </tr>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    担当者
+                                </th>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    @foreach($project->users as $user)
+                                        {{ $user->name }}<br>
+                                    @endforeach
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
 
